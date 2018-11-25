@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D
 
 def PlotShow(func):
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111,projection='3d')
     x = y = np.arange(func.Min, func.Max, func.Density)
     X, Y = np.meshgrid(x, y)
     zs = np.array([func.CalculateVector((x,y)) for x,y in zip(np.ravel(X), np.ravel(Y))])

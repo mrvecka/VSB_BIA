@@ -149,7 +149,7 @@ def SomaAlgorithm(func):
 def ParticalSwarnAlgorithm(func):
 
     iterations = 20
-    particles = 10;
+    particles = 10
     c1 = 2
     c2 = 2
     weightStart = 0.9
@@ -203,33 +203,41 @@ def ParticalSwarnAlgorithm(func):
         myPlot.AddScatter(ax,gBest.coordinates[0],gBest.coordinates[1],gBest.z,"yellow")
     myPlot.Show()
 
-def DifferentialEvolutionAlgorithm(func):
+def DifferentialEvolutionAlgorithm(func,basic):
 
     generations = 20
     threshold = 0.7
     mutation = 0.8
-    dim = 2;
+    dim = 2
     field = h.GenerateRandomUniformField(func.Min,func.Max,10*dim)    
     func.CalculateField(field)
 
-    ax = myPlot.PlotShow(func)
-    myPlot.AddScatters(ax,field,"black")
+    #ax = myPlot.PlotShow(func)
+    #myPlot.AddScatters(ax,field,"black")
 
     for i in range(generations):
         newPopulation = []
         for item in range(len(field)):
 
             rand_walkers = h.SelectNRandomWalkers(field,3,item)
+            rand_best = h.GetRandomBestWalkerForDE(field,item)
             final_vector = []
             for coor in range(len(rand_walkers[0].coordinates)):
-                differential_value = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
-                noisy_val = differential_value + rand_walkers[2].coordinates[coor]
+                noisy_val = 0.0
+                if basic:
+                    differential_value = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
+                    noisy_val = differential_value + rand_walkers[2].coordinates[coor]
+                else:
+                    val3 = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
+                    val2 = rand_best.coordinates[coor] - field[item].coordinates[coor]
+                    noisy_val = field[item].coordinates[coor] + val2 + val3
 
                 cr_param = np.random.uniform(0,1,1)
                 if cr_param < threshold:
                     final_vector.append(field[item].coordinates[coor])
                 else:
-                    final_vector.append(noisy_val)                    
+                    final_vector.append(noisy_val)    
+                    
             
             z = func.CalculateVector(final_vector)
             if z < field[item].z:
@@ -238,28 +246,30 @@ def DifferentialEvolutionAlgorithm(func):
                 newPopulation.append(f.Walker(field[item].coordinates,field[item].z))
 
         field = newPopulation
-        myPlot.PlotPause(0.5)
-        ax = myPlot.PlotShowAnimated(ax,func)
+        #myPlot.PlotPause(0.5)
+        #ax = myPlot.PlotShowAnimated(ax,func)
 
-        myPlot.AddScatters(ax,field,"r")
-    myPlot.Show()
+        #myPlot.AddScatters(ax,field,"r")
+    #myPlot.Show()
 
+    return h.FindMinimum2(field).z
 
-# + current to pBest strategy
+# sum_basic = 0
+# sum_advandec = 0
+# for i in range(30):
+#     sum_basic += DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
+#     sum_advandec += DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),False)
 
+# print(sum_basic/30)
+# print(sum_advandec/30)
 
-# jeden jedinec je postupnost miest a fitness je dlzka vsetkych vzdialenosti
-# x jedincov
-# k jedincovi vyberiem nahodne rodica s ktorym sa bude krizit
-# 2 bodove krizenie (nahodne)
-# okraje z prveho potomka a stred doskladam z druheho tak aby som zachoval postupnost 
-# (idem od zaciatku a do vyslednej postupnosti pridam mesto ak ho vysledna postupnost este neobsahuje )
-# mutaciu robim tak ze nahodne vyberiem dve mesta a prehodim ich 
-# skusit kolko krat to treba spustit
+# differential(basic)   differential(currento to pBest(best from random 5))
+# 0.002844271212791424  0.001144669781332199
+
 def TravelerSalesManGA():
 
-    indexes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
-    cities = h.GetListOfCities();
+    cities = h.GetListOfCities()
+    indexes = h.GetCitiesIndexes(cities)
     lengthMatrix = h.CalculateEuclideanDistance(cities)
     population = h.GenerateRandomUnsortedPopulation(cities,20,lengthMatrix)
     
@@ -268,7 +278,7 @@ def TravelerSalesManGA():
     M_param = 0.08
     ax = myPlot.PlotTravelerPoints(bestWay)
 
-    for iter in range(500):
+    for iter in range(700):
         newPopulation = []
         for pop in range(len(population)):
             random_crossover = random.uniform(0,1)
@@ -279,17 +289,8 @@ def TravelerSalesManGA():
                 parent =random.sample(population,1)[0] 
                 while actualTraveler.Id == parent.Id:
                     parent =random.sample(population,1)[0]         
-                # x1,x2 = random.sample(indexes,2)
-                # tempLeft = actualTraveler.ListOfCities[:x1]
-                # tempRight = actualTraveler.ListOfCities[x2:]
-                # tempFinal = tempLeft + tempRight
-                # for i in range(len(parent.ListOfCities)):
-                #     if not parent.ListOfCities[i] in tempFinal:
-                #         tempLeft.append(parent.ListOfCities[i])
-                
-                # temp = tempLeft + tempRight
-                # newTraveler = f.Traveler(temp,lengthMatrix,actualTraveler.Id)
-                newTraveler = f.Traveler(h.Crossover(parent,actualTraveler),lengthMatrix,actualTraveler.Id)
+
+                newTraveler = h.Crossover(parent,actualTraveler,lengthMatrix)
             else:
                 newTraveler = actualTraveler
 
@@ -319,14 +320,36 @@ def TravelerSalesManGA():
 
     myPlot.Show()
 
+def AntColonyOptimalizationAlgorithm():
+
+    cities = h.GetListOfCities()
+    lengthMatrix = np.array(h.CalculateEuclideanDistance(cities))
+    pheromone = np.ones(lengthMatrix.shape) / len(lengthMatrix)
+    iterations = 100
+    n_ants = 1
+    n_best = 1
+    decay = 0.95
+
+    shortest_path = 0
+    global_short_path = ('plavceholder',np.inf)
+    for i in range(iterations):
+        all_paths = h.generate_paths(n_ants,lengthMatrix,pheromone)
+        h.spread_pheronome(all_paths, n_best,pheromone,lengthMatrix, shortest_path=shortest_path)
+        shortest_path = min(all_paths, key=lambda x: x[1])
+        if shortest_path[1] < global_short_path[1]:
+            global_short_path = shortest_path            
+        pheromone * decay         
+
+    print(global_short_path)
+
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
 # BlindAlgorithm(20,(-2,2),(-2,2),f.SphereFunction(-2,2,0.1))
 # AnnealingAlgorithm(-2,1,f.SchwefelFunction(-500,500,1))
 # SomaAlgorithm(f.SphereFunction(-2,2,0.1))
 # ParticalSwarnAlgorithm(f.RosenbrockFunction(-2,3,0.1))
-# DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1))
-
-TravelerSalesManGA()
+# DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
+# TravelerSalesManGA()
+AntColonyOptimalizationAlgorithm()
 
 
 

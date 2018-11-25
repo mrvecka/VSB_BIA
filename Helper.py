@@ -56,6 +56,13 @@ def SelectNRandomWalkers(field,count,actualIndex):
     
     return indexes
 
+def GetRandomBestWalkerForDE(field,actualIndex):
+    indexes = SelectNRandomWalkers(field,5,actualIndex)
+    best = FindMinimum2(indexes)
+
+    return best
+
+
 def GetListOfCities():
     cities = []
 
@@ -82,13 +89,21 @@ def GetListOfCities():
 
     return cities
 
+def GetCitiesIndexes(cities):
+    indexes = []
+    for i in range(len(cities)):
+        indexes.append(cities[i].Id)
+
+    return indexes
+
+
 def CalculateEuclideanDistance(cities):
     matrix = []
     for i in range(len(cities)):
         arr = []
         for j in range(len(cities)):
             if cities[i].Id == cities[j].Id:
-                arr.append(0)
+                arr.append(np.inf)
             else:
                 sum = 0.0
                 for c in range(len(cities[j].Coordinates)):
@@ -117,18 +132,29 @@ def FindBestWay(population):
 
     return best
 
-def Crossover(chromosome1, chromosome2):
-    end = random.randint(0, len(chromosome1.ListOfCities))
-    start = random.randint(0, end)
-    section = chromosome1.ListOfCities[start:end]
-    offspring_genes = list(
-        gene if gene not in section else None for gene in chromosome2.ListOfCities)
-    g = (x for x in section)
-    for i, x in enumerate(offspring_genes):
-        if x is None:
-            offspring_genes[i] = next(g)
+def Crossover(chromosome1, chromosome2, lengthMatrix):
+    # end = random.randint(0, len(chromosome1.ListOfCities))
+    # start = random.randint(0, end)
+    # section = chromosome1.ListOfCities[start:end]
+    # offspring_genes = list(
+    #     gene if gene not in section else None for gene in chromosome2.ListOfCities)
+    # g = (x for x in section)
+    # for i, x in enumerate(offspring_genes):
+    #     if x is None:
+    #         offspring_genes[i] = next(g)
+
+    x1,x2 = random.sample(indexes,2)
+    tempLeft = chromosome2.ListOfCities[:x1]
+    tempRight = chromosome2.ListOfCities[x2:]
+    tempFinal = tempLeft + tempRight
+    for i in range(len(chromosome1.ListOfCities)):
+        if not chromosome1.ListOfCities[i] in tempFinal:
+            tempLeft.append(chromosome1.ListOfCities[i])
     
-    return offspring_genes
+    temp = tempLeft + tempRight
+    newTraveler = f.Traveler(temp,lengthMatrix,actualTraveler.Id)
+    
+    return newTraveler
 
 def GetPerturbationVector(dim,ptr_value):
     x = np.random.uniform(0,1,dim)
@@ -139,3 +165,46 @@ def GetPerturbationVector(dim,ptr_value):
             x[i] = 0
 
     return x
+
+
+def generate_paths(count_of_ants,distances,pheromone):
+    all_paths = []
+    for i in range(count_of_ants):
+        path = gen_path(0,distances,pheromone)
+        all_paths.append((path, gen_path_dist(path,distances)))
+    return all_paths
+
+def gen_path_dist(path,distances):
+    total_dist = 0
+    for ele in path:
+        total_dist += distances[ele]
+    return total_dist
+
+def gen_path(start,distances,pheromone):
+    path = []
+    visited = set()
+    visited.add(start)
+    prev = start
+    for i in range(len(distances) - 1):
+        move = pick_move(pheromone[prev], distances[prev], visited, distances)
+        path.append((prev, move))
+        prev = move
+        visited.add(move)
+    path.append((prev, start)) # going back to where we started    
+    return path
+
+def pick_move(pheromone, dist, visited, distances):
+    pheromone = np.copy(pheromone)
+    pheromone[list(visited)] = 0
+
+    row = pheromone ** 1* (( 1.0 / dist) ** 1)
+
+    norm_row = row / row.sum()
+    move = np.random.choice(len(distances), 1, p=norm_row)[0]
+    return move
+
+def spread_pheronome(all_paths, n_best, pheromone, distances, shortest_path):
+    sorted_paths = sorted(all_paths, key=lambda x: x[1])
+    for path, dist in sorted_paths[:n_best]:
+        for move in path:
+            pheromone[move] += 1.0 / distances[move]
