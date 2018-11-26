@@ -132,7 +132,7 @@ def FindBestWay(population):
 
     return best
 
-def Crossover(chromosome1, chromosome2, lengthMatrix):
+def Crossover(chromosome1, chromosome2, lengthMatrix,indexes):
     # end = random.randint(0, len(chromosome1.ListOfCities))
     # start = random.randint(0, end)
     # section = chromosome1.ListOfCities[start:end]
@@ -152,7 +152,7 @@ def Crossover(chromosome1, chromosome2, lengthMatrix):
             tempLeft.append(chromosome1.ListOfCities[i])
     
     temp = tempLeft + tempRight
-    newTraveler = f.Traveler(temp,lengthMatrix,actualTraveler.Id)
+    newTraveler = f.Traveler(temp,lengthMatrix,chromosome2.Id)
     
     return newTraveler
 
@@ -167,10 +167,10 @@ def GetPerturbationVector(dim,ptr_value):
     return x
 
 
-def generate_paths(count_of_ants,distances,pheromone):
+def generate_paths(start,count_of_ants,distances,pheromone):
     all_paths = []
     for i in range(count_of_ants):
-        path = gen_path(0,distances,pheromone)
+        path = gen_path(start,distances,pheromone)
         all_paths.append((path, gen_path_dist(path,distances)))
     return all_paths
 
@@ -203,8 +203,25 @@ def pick_move(pheromone, dist, visited, distances):
     move = np.random.choice(len(distances), 1, p=norm_row)[0]
     return move
 
-def spread_pheronome(all_paths, n_best, pheromone, distances, shortest_path):
+def spread_pheromone(all_paths, n_best, pheromone, distances, shortest_path):
     sorted_paths = sorted(all_paths, key=lambda x: x[1])
     for path, dist in sorted_paths[:n_best]:
         for move in path:
             pheromone[move] += 1.0 / distances[move]
+
+def GetXYOfAntPath(path,cities):
+    x = []
+    y = []
+
+    for i in range(len(path[0])):
+        start_city_index = path[0][i][0]
+        end_city_index = path[0][i][1]
+        start_city = cities[start_city_index]
+        end_city = cities[end_city_index]
+
+        x.append(start_city.Coordinates[0])
+        y.append(start_city.Coordinates[1])
+        x.append(end_city.Coordinates[0])
+        y.append(end_city.Coordinates[1])
+
+    return x,y

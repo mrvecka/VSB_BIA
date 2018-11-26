@@ -3,8 +3,8 @@ import math as m
 import random
 import Functions as f
 import time
-import PlotFunctions as myPlot
 import Helper as h
+import PlotFunctions as myPlot
 
 
 #       hillclimb(prieaveragemer)       annealing(average)
@@ -290,7 +290,7 @@ def TravelerSalesManGA():
                 while actualTraveler.Id == parent.Id:
                     parent =random.sample(population,1)[0]         
 
-                newTraveler = h.Crossover(parent,actualTraveler,lengthMatrix)
+                newTraveler = h.Crossover(parent,actualTraveler,lengthMatrix,indexes)
             else:
                 newTraveler = actualTraveler
 
@@ -325,21 +325,30 @@ def AntColonyOptimalizationAlgorithm():
     cities = h.GetListOfCities()
     lengthMatrix = np.array(h.CalculateEuclideanDistance(cities))
     pheromone = np.ones(lengthMatrix.shape) / len(lengthMatrix)
-    iterations = 100
+    iterations = 20
     n_ants = 1
     n_best = 1
     decay = 0.95
-
     shortest_path = 0
+    ax = myPlot.PlotAntPathStart(cities)
     global_short_path = ('plavceholder',np.inf)
-    for i in range(iterations):
-        all_paths = h.generate_paths(n_ants,lengthMatrix,pheromone)
-        h.spread_pheronome(all_paths, n_best,pheromone,lengthMatrix, shortest_path=shortest_path)
-        shortest_path = min(all_paths, key=lambda x: x[1])
-        if shortest_path[1] < global_short_path[1]:
-            global_short_path = shortest_path            
-        pheromone * decay         
+    for j in range(60):
+        for i in range(iterations):
+            all_paths = h.generate_paths(i,n_ants,lengthMatrix,pheromone)
+            h.spread_pheromone(all_paths, n_best,pheromone,lengthMatrix, shortest_path=shortest_path)
+            shortest_path = min(all_paths, key=lambda x: x[1])
+            if shortest_path[1] < global_short_path[1]:
+                global_short_path = shortest_path            
+            pheromone * decay      
+            print('iteration:',j,'ant:',i,'path length',shortest_path[1])
+        x,y = h.GetXYOfAntPath(shortest_path,cities)
+        myPlot.PlotPause(1) 
+        myPlot.PlotAntPath(ax,x,y) 
 
+    x,y = h.GetXYOfAntPath(global_short_path,cities)
+    myPlot.PlotPause(1) 
+    myPlot.PlotAntPath(ax,x,y) 
+    myPlot.Show()
     print(global_short_path)
 
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
