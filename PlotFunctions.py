@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import axes3d
 
 def PlotShow(func):
     fig = plt.figure()
