@@ -174,12 +174,16 @@ def GetLineVector(start,end):
 
     return vec
 
-def CalculateBetterSoma(func,current,leader,step,half_count_of_jumps):
+def CalculateBetterSoma(func,current,leader,step,half_count_of_jumps,new_pos):
     vec = GetLineVector(current,leader)
     perpedicular_vec = [vec[1],-vec[0]]
+    k = ((leader.coordinates[1] - current.coordinates[1]) * (new_pos.coordinates[0] - current.coordinates[0]) - (leader.coordinates[0] - current.coordinates[0]) * (new_pos.coordinates[1] - current.coordinates[1])) / (pow(leader.coordinates[1] - current.coordinates[1],2) + pow(leader.coordinates[0] - current.coordinates[0],2))
+    x = new_pos.coordinates[0] - k * (leader.coordinates[1] - current.coordinates[1])
+    y = new_pos.coordinates[1] + k * (leader.coordinates[0] - current.coordinates[0])
 
-    vec[0] += half_count_of_jumps*step
-    vec[1] += half_count_of_jumps*step
+    vec = (x,y)
+    # vec[0] += half_count_of_jumps*step
+    # vec[1] += half_count_of_jumps*step
 
     jumps = []
     w = f.Walker((vec[0],vec[1]),0)
@@ -230,11 +234,15 @@ def pick_move(pheromone, dist, visited, distances):
     move = np.random.choice(len(distances), 1, p=norm_row)[0]
     return move
 
-def spread_pheromone(all_paths, n_best, pheromone, distances, shortest_path):
-    sorted_paths = sorted(all_paths, key=lambda x: x[1])
-    for path, dist in sorted_paths[:n_best]:
-        for move in path:
-            pheromone[move] += 1.0 / distances[move]
+def spread_pheromone(paths, n_best, pheromone, distances):
+    path = paths[0]
+    total_sum = 0
+    for i in path:
+        total_sum += pheromone[i]
+    for move in path:
+        pheromone[move] += 1.0 / distances[move]
+        #pheromone[move] += (1 - 0.6) * pheromone[move] + total_sum
+
 
 def GetXYOfAntPath(path,cities):
     x = []

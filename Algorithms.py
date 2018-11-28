@@ -135,7 +135,7 @@ def SomaAlgorithm(func,advanced_soma):
             
             new_pos = h.FindMinimum2(jumps)
             if advanced_soma:
-                new_jumps = h.CalculateBetterSoma(func,field[k],leader,step,2)
+                new_jumps = h.CalculateBetterSoma(func,field[k],leader,step,2,new_pos)
                 advanced_pos = h.FindMinimum2(new_jumps)
                 if advanced_pos.z < new_pos.z:
                     new_pos = advanced_pos
@@ -209,7 +209,7 @@ def ParticalSwarnAlgorithm(func):
         myPlot.AddScatter(ax,gBest.coordinates[0],gBest.coordinates[1],gBest.z,"yellow")
     myPlot.Show()
 
-def DifferentialEvolutionAlgorithm(func,basic):
+def DifferentialEvolutionAlgorithm(func,strategy2):
 
     generations = 20
     threshold = 0.7
@@ -230,13 +230,13 @@ def DifferentialEvolutionAlgorithm(func,basic):
             final_vector = []
             for coor in range(len(rand_walkers[0].coordinates)):
                 noisy_val = 0.0
-                if basic:
-                    differential_value = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
-                    noisy_val = differential_value + rand_walkers[2].coordinates[coor]
-                else:
+                if strategy2:
                     val3 = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
                     val2 = rand_best.coordinates[coor] - field[item].coordinates[coor]
                     noisy_val = field[item].coordinates[coor] + val2 + val3
+                else:
+                    differential_value = (rand_walkers[0].coordinates[coor] - rand_walkers[1].coordinates[coor]) * mutation
+                    noisy_val = differential_value + rand_walkers[2].coordinates[coor]
 
                 cr_param = np.random.uniform(0,1,1)
                 if cr_param < threshold:
@@ -338,15 +338,18 @@ def AntColonyOptimalizationAlgorithm():
     shortest_path = 0
     ax = myPlot.PlotAntPathStart(cities)
     global_short_path = ('plavceholder',np.inf)
-    for j in range(60):
+    for j in range(100):
+        paths = []
         for i in range(iterations):
             all_paths = h.generate_paths(i,n_ants,lengthMatrix,pheromone)
-            h.spread_pheromone(all_paths, n_best,pheromone,lengthMatrix, shortest_path=shortest_path)
             shortest_path = min(all_paths, key=lambda x: x[1])
+            paths.append(shortest_path)
             if shortest_path[1] < global_short_path[1]:
                 global_short_path = shortest_path            
             pheromone * decay      
-            print('iteration:',j,'ant:',i,'path length',shortest_path[1])
+        for i in range(iterations):
+            h.spread_pheromone(paths[i], n_best,pheromone,lengthMatrix)
+            
         x,y = h.GetXYOfAntPath(shortest_path,cities)
         myPlot.PlotPause(1) 
         myPlot.PlotAntPath(ax,x,y) 
@@ -357,14 +360,21 @@ def AntColonyOptimalizationAlgorithm():
     myPlot.Show()
     print(global_short_path)
 
+# vygenerovt populaciu, prechadzat ich a generovat pootmkov, ak je potommok lepsi ako rodic tak ho nahradi
+# pamatam si kolko potomkov som vylepsil
+# ak je pocet vylepsenych vacsi ako (pozriet v prezentacii) tak prepocitat sigmu
+# mi je populacia rodicov
+# lambda su potomkovia
+
+
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
 # BlindAlgorithm(20,(-2,2),(-2,2),f.SphereFunction(-2,2,0.1))
 # AnnealingAlgorithm(-2,1,f.SchwefelFunction(-500,500,1))
-SomaAlgorithm(f.SphereFunction(-2,2,0.1),True)
+# SomaAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # ParticalSwarnAlgorithm(f.RosenbrockFunction(-2,3,0.1))
 # DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # TravelerSalesManGA()
-# AntColonyOptimalizationAlgorithm()
+AntColonyOptimalizationAlgorithm()
 
 
 
