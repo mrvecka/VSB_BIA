@@ -337,7 +337,7 @@ def AntColonyOptimalizationAlgorithm():
     decay = 0.95
     shortest_path = 0
     ax = myPlot.PlotAntPathStart(cities)
-    global_short_path = ('plavceholder',np.inf)
+    global_short_path = ('placeholder',np.inf)
     for j in range(100):
         paths = []
         for i in range(iterations):
@@ -355,7 +355,7 @@ def AntColonyOptimalizationAlgorithm():
         myPlot.PlotAntPath(ax,x,y) 
 
     x,y = h.GetXYOfAntPath(global_short_path,cities)
-    myPlot.PlotPause(1) 
+    myPlot.PlotPause(.2) 
     myPlot.PlotAntPath(ax,x,y) 
     myPlot.Show()
     print(global_short_path)
@@ -366,6 +366,50 @@ def AntColonyOptimalizationAlgorithm():
 # mi je populacia rodicov
 # lambda su potomkovia
 
+def EvolutionAlgorithm(func,pop_size,iterations):
+
+    c_d = 0.817
+    ax = myPlot.PlotShow(func)
+
+    field = h.GenerateRandomUniformField(func.Min,func.Max,pop_size)
+    func.CalculateField(field)
+    leader = h.FindMinimum2(field)
+
+    myPlot.AddScatters(ax,field,"r")
+    myPlot.AddScatter(ax,leader.coordinates[0],leader.coordinates[1],leader.z,"yellow")
+
+    sigma = 1.224
+    for i in range(iterations):
+        updated_field = []
+        replaced = 0
+        for w in range(pop_size):
+            distance = h.CalcuateEuclideanDistance(leader.coordinates,field[w].coordinates)
+            sigma = sigma * (distance / pop_size)
+            new_x = np.random.uniform(func.Min,func.Max,1)[0] * sigma
+            new_y = np.random.uniform(func.Min,func.Max,1)[0] * sigma
+            child = f.Walker((new_x,new_y))
+            child.z = func.CalculateVector(child.coordinates)
+
+            if child.z < field[w].z:
+                updated_field.append(child)
+                replaced +=1
+            else:
+                updated_field.append(field[w])
+
+        probability = replaced / len(field)
+        if probability < 1/5:
+            sigma = sigma * c_d
+        elif probability > 1/5:
+            sigma = sigma / c_d
+        else:
+            sigma = sigma
+
+        field = updated_field
+        myPlot.PlotPause(.5)
+        ax = myPlot.PlotShowAnimated(ax,func)
+        myPlot.AddScatters(ax,field,'r')
+    myPlot.Show()
+
 
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
 # BlindAlgorithm(20,(-2,2),(-2,2),f.SphereFunction(-2,2,0.1))
@@ -374,7 +418,9 @@ def AntColonyOptimalizationAlgorithm():
 # ParticalSwarnAlgorithm(f.RosenbrockFunction(-2,3,0.1))
 # DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # TravelerSalesManGA()
-AntColonyOptimalizationAlgorithm()
+# AntColonyOptimalizationAlgorithm()
+EvolutionAlgorithm(f.SphereFunction(-2,2,0.1),20,50)
+
 
 
 

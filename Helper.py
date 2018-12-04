@@ -260,3 +260,12 @@ def GetXYOfAntPath(path,cities):
         y.append(end_city.Coordinates[1])
 
     return x,y
+
+def CalcuateEuclideanDistance(vec1,vec2):    
+    sum =0
+    for i in range(len(vec1)):
+        sum += pow(abs(vec2[i] - vec1[i]),2)
+    
+    sum = m.sqrt(sum)
+    return sum
+
