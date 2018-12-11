@@ -271,15 +271,11 @@ def CalcuateEuclideanDistance(vec1,vec2):
 
 def GetMultiObjectOptimalizationPopulation(min, max, size):
     population = np.random.randint(min,max,size)
-    f1 = lambda x : -x**2 
-    f2 = lambda x : -(x-2)**2
-
-    res1 = filter(f1, population)
-    res2 = filter(f2,population)
-
     pop = []
-    # for i in range(len(res1)):
-    #     pop.add((res1[i],res2[i]))
+    # for i in range(size):
+    #     x = -population[i] **2
+    #     y =  -(population[i]-2)**2
+    #     pop.append((x,y))
 
     pop.append((-4,-16))
     pop.append((-1,-9))
@@ -358,6 +354,9 @@ def ReduceFullPopulationMO(pop,size):
 
             if actual[0] >= sort[0] and actual[1] >= sort[1]:
                 sorted_pop.insert(j,actual)
+                break
+            elif j == len(sorted_pop) -1:
+                sorted_pop.insert(j+1,actual)
                 break
     
     return sorted_pop[:size]

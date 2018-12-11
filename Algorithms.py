@@ -410,21 +410,24 @@ def EvolutionAlgorithm(func,pop_size,iterations):
         myPlot.AddScatters(ax,field,'r')
     myPlot.Show()
 
-def MultiObjectOptimalization():
+def MultiObjectOptimalization(iterations):
     size = 6
     pop = h.GetMultiObjectOptimalizationPopulation(-55,55,size)
             
     q_res = h.CreateMultiObjectiveRanks(pop,size)
     print(q_res)
 
-    new_temp_pop = h.CreateNewMultiObjectivePopulation(pop,0.002)
+    for i in range(iterations):
+        new_temp_pop = h.CreateNewMultiObjectivePopulation(pop,0.002)
 
-    full_pop = pop.copy()
-    full_pop.extend(new_temp_pop)
-    new_pop = h.ReduceFullPopulationMO(full_pop,size)
+        full_pop = pop.copy()
+        full_pop.extend(new_temp_pop)
+        new_pop = h.ReduceFullPopulationMO(full_pop,size)
+        pop = new_pop
+        q_res = h.CreateMultiObjectiveRanks(pop,size)
+        print(q_res)
 
-    q_res = h.CreateMultiObjectiveRanks(new_pop,size)
-    print(q_res)
+
 
     
 
@@ -456,7 +459,7 @@ def MultiObjectOptimalization():
 # TravelerSalesManGA()
 # AntColonyOptimalizationAlgorithm()
 # EvolutionAlgorithm(f.SphereFunction(-2,2,0.1),20,50)
-MultiObjectOptimalization()
+MultiObjectOptimalization(3)
 
 
 
