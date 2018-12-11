@@ -269,3 +269,101 @@ def CalcuateEuclideanDistance(vec1,vec2):
     sum = m.sqrt(sum)
     return sum
 
+def GetMultiObjectOptimalizationPopulation(min, max, size):
+    population = np.random.randint(min,max,size)
+    f1 = lambda x : -x**2 
+    f2 = lambda x : -(x-2)**2
+
+    res1 = filter(f1, population)
+    res2 = filter(f2,population)
+
+    pop = []
+    # for i in range(len(res1)):
+    #     pop.add((res1[i],res2[i]))
+
+    pop.append((-4,-16))
+    pop.append((-1,-9))
+    pop.append((0,-4))
+    pop.append((-4,0))
+    pop.append((-16,-4))
+    pop.append((-1,-1))
+
+    return pop
+
+def Contains(pop,item):
+    contains = False
+    for i in range(len(pop)):
+        if isinstance(pop[i],list):
+            for j in range(len(pop[i])):
+                if pop[i][j] == item:
+                    contains = True
+        else:
+            if pop[i] == item:
+                contains = True
+                
+    return contains
+
+def CreateMultiObjectiveRanks(pop,size):
+    np_res = np.zeros(size)  
+    sp_temp = []
+    sp_res = []
+    for j in range(len(pop)):
+        for i in range(len(pop)):
+            if j != i:
+                if pop[i][0] >= pop[j][0] and pop[i][1] >= pop[j][1]:
+                    np_res[j] = np_res[j] +1 #np
+                if pop[i][0] <= pop[j][0] and pop[i][1] <= pop[j][1]:
+                    sp_temp.append(i) #sp
+        sp_res.append(sp_temp)
+        sp_temp = []
+
+    q_res = []
+    for m in range(len(np_res)):
+        q = []
+        for i in range(len(np_res)):
+            if np_res[i] == 0 and not Contains(q_res,i):
+                q.append(i)
+        if len(q) == 0:
+            break
+        q_res.append(q)
+        for i in range(len(q)):
+            tmp = sp_res[q[i]]
+            for j in range(len(tmp)):
+                np_res[tmp[j]] = np_res[tmp[j]] -1 
+
+    return q_res 
+
+def CreateNewMultiObjectivePopulation(old_pop,delta):
+
+    new_pop = []
+    for i in range(len(old_pop)):
+        parents = random.sample(old_pop,2)
+        x = (parents[0][0] + parents[1][0]) / 2 
+        y = (parents[0][1] + parents[1][1]) / 2
+
+        x += delta
+        y += delta
+        new_pop.append((x,y))
+    
+    return new_pop
+
+def ReduceFullPopulationMO(pop,size):
+    sorted_pop = []
+    sorted_pop.append(pop[0])
+    for i in range(1,len(pop)):
+        actual = pop[i]
+
+        for j in range(len(sorted_pop)):
+            sort = sorted_pop[j]
+
+            if actual[0] >= sort[0] and actual[1] >= sort[1]:
+                sorted_pop.insert(j,actual)
+                break
+    
+    return sorted_pop[:size]
+
+
+     
+
+    
+

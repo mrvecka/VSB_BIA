@@ -405,10 +405,46 @@ def EvolutionAlgorithm(func,pop_size,iterations):
             sigma = sigma
 
         field = updated_field
-        myPlot.PlotPause(.5)
+        myPlot.PlotPause(2)
         ax = myPlot.PlotShowAnimated(ax,func)
         myPlot.AddScatters(ax,field,'r')
     myPlot.Show()
+
+def MultiObjectOptimalization():
+    size = 6
+    pop = h.GetMultiObjectOptimalizationPopulation(-55,55,size)
+            
+    q_res = h.CreateMultiObjectiveRanks(pop,size)
+    print(q_res)
+
+    new_temp_pop = h.CreateNewMultiObjectivePopulation(pop,0.002)
+
+    full_pop = pop.copy()
+    full_pop.extend(new_temp_pop)
+    new_pop = h.ReduceFullPopulationMO(full_pop,size)
+
+    q_res = h.CreateMultiObjectiveRanks(new_pop,size)
+    print(q_res)
+
+    
+
+
+
+# NSGA2 algoritmus fast and elitist multiobjective genetic algorithm
+# fi = -x^2
+# f2 = -(x-2)^2
+# population => [-2,-1,0,2,4,1] z  intervalu -55 az 55#
+# vypocitas fitens pre kazdeho jedinca
+# ulozit riesenie ktore su lepsie ako ja a ktore su horsie ako ja np
+# np obsahuje riesenie ktore dominuju danemu rieseniu a zapisujem pocet tychto rieseni do np (np bude obsahovat len kladne cisla) (porovanavam vysledky z funkcii)
+# np => pocet rieseni ktore su lepsie ako toto
+# sp => pre ktore riesenie je toto riesenie lepsie sp
+# ked mam vysledok tak ho prechadzam a v np znizujem pocet o 1, ak dosiahne nulu tak ho zaradim do dalsej fronty
+# fitness crowding
+# Pareto-ranking approaches
+
+# vygenerovat rovnaky pocet deti (vyberies dvoch rodicov spriemerujes a pripocitas konstantu a vygenerujes novu populaciu)
+# novu populaciu pripojis k starej a spravis ranky (q_res)
 
 
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
@@ -419,8 +455,8 @@ def EvolutionAlgorithm(func,pop_size,iterations):
 # DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # TravelerSalesManGA()
 # AntColonyOptimalizationAlgorithm()
-EvolutionAlgorithm(f.SphereFunction(-2,2,0.1),20,50)
-
+# EvolutionAlgorithm(f.SphereFunction(-2,2,0.1),20,50)
+MultiObjectOptimalization()
 
 
 
