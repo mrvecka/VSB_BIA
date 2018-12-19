@@ -133,12 +133,7 @@ def SomaAlgorithm(func,advanced_soma):
                 w.z = func.CalculateVector(w.coordinates)
                 jumps.append(w)
             
-            new_pos = h.FindMinimum2(jumps)
-            if advanced_soma:
-                new_jumps = h.CalculateBetterSoma(func,field[k],leader,step,2,new_pos)
-                advanced_pos = h.FindMinimum2(new_jumps)
-                if advanced_pos.z < new_pos.z:
-                    new_pos = advanced_pos
+            new_pos = h.FindMinimum2(jumps)        
 
             field[k] = new_pos
         
@@ -453,13 +448,13 @@ def MultiObjectOptimalization(iterations):
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
 # BlindAlgorithm(20,(-2,2),(-2,2),f.SphereFunction(-2,2,0.1))
 # AnnealingAlgorithm(-2,1,f.SchwefelFunction(-500,500,1))
-# SomaAlgorithm(f.SphereFunction(-2,2,0.1),True)
+SomaAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # ParticalSwarnAlgorithm(f.RosenbrockFunction(-2,3,0.1))
 # DifferentialEvolutionAlgorithm(f.SphereFunction(-2,2,0.1),True)
 # TravelerSalesManGA()
 # AntColonyOptimalizationAlgorithm()
 # EvolutionAlgorithm(f.SphereFunction(-2,2,0.1),20,50)
-MultiObjectOptimalization(3)
+# MultiObjectOptimalization(3)
 
 
 
