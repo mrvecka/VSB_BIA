@@ -166,6 +166,39 @@ def GetPerturbationVector(dim,ptr_value):
 
     return x
 
+def GetLineVector(start,end):
+    vec = []
+    for i in range(len(start.coordinates)):
+        tmp = end.coordinates[i] - start.coordinates[i]
+        vec.append(tmp)
+
+    return vec
+
+def CalculateBetterSoma(func,current,leader,step,half_count_of_jumps,new_pos):
+    vec = GetLineVector(current,leader)
+    perpedicular_vec = [vec[1],-vec[0]]
+    k = ((leader.coordinates[1] - current.coordinates[1]) * (new_pos.coordinates[0] - current.coordinates[0]) - (leader.coordinates[0] - current.coordinates[0]) * (new_pos.coordinates[1] - current.coordinates[1])) / (pow(leader.coordinates[1] - current.coordinates[1],2) + pow(leader.coordinates[0] - current.coordinates[0],2))
+    x = new_pos.coordinates[0] - k * (leader.coordinates[1] - current.coordinates[1])
+    y = new_pos.coordinates[1] + k * (leader.coordinates[0] - current.coordinates[0])
+
+    vec = []
+    vec.append(x)
+    vec.append(y)
+    # vec[0] += half_count_of_jumps*step
+    # vec[1] += half_count_of_jumps*step
+
+    jumps = []
+    w = f.Walker((vec[0],vec[1]),0)
+    w.z = func.CalculateVector(w.coordinates)
+    jumps.append(w)
+    for i in range(half_count_of_jumps * 2):
+        vec[0] -= step
+        vec[1] -= step
+        w = f.Walker((vec[0],vec[1]),0)
+        w.z = func.CalculateVector(w.coordinates)
+        jumps.append(w)
+    return jumps
+
 def generate_paths(start,count_of_ants,distances,pheromone):
     all_paths = []
     for i in range(count_of_ants):

@@ -134,6 +134,11 @@ def SomaAlgorithm(func,advanced_soma):
                 jumps.append(w)
             
             new_pos = h.FindMinimum2(jumps)        
+            if advanced_soma:
+                new_jumps = h.CalculateBetterSoma(func,field[k],leader,step,2,new_pos)
+                advanced_pos = h.FindMinimum2(new_jumps)
+                if advanced_pos.z < new_pos.z:
+                    new_pos = advanced_pos
 
             field[k] = new_pos
         
@@ -355,12 +360,6 @@ def AntColonyOptimalizationAlgorithm():
     myPlot.Show()
     print(global_short_path)
 
-# vygenerovt populaciu, prechadzat ich a generovat pootmkov, ak je potommok lepsi ako rodic tak ho nahradi
-# pamatam si kolko potomkov som vylepsil
-# ak je pocet vylepsenych vacsi ako (pozriet v prezentacii) tak prepocitat sigmu
-# mi je populacia rodicov
-# lambda su potomkovia
-
 def EvolutionAlgorithm(func,pop_size,iterations):
 
     c_d = 0.817
@@ -421,28 +420,6 @@ def MultiObjectOptimalization(iterations):
         pop = new_pop
         q_res = h.CreateMultiObjectiveRanks(pop,size)
         print(q_res)
-
-
-
-    
-
-
-
-# NSGA2 algoritmus fast and elitist multiobjective genetic algorithm
-# fi = -x^2
-# f2 = -(x-2)^2
-# population => [-2,-1,0,2,4,1] z  intervalu -55 az 55#
-# vypocitas fitens pre kazdeho jedinca
-# ulozit riesenie ktore su lepsie ako ja a ktore su horsie ako ja np
-# np obsahuje riesenie ktore dominuju danemu rieseniu a zapisujem pocet tychto rieseni do np (np bude obsahovat len kladne cisla) (porovanavam vysledky z funkcii)
-# np => pocet rieseni ktore su lepsie ako toto
-# sp => pre ktore riesenie je toto riesenie lepsie sp
-# ked mam vysledok tak ho prechadzam a v np znizujem pocet o 1, ak dosiahne nulu tak ho zaradim do dalsej fronty
-# fitness crowding
-# Pareto-ranking approaches
-
-# vygenerovat rovnaky pocet deti (vyberies dvoch rodicov spriemerujes a pripocitas konstantu a vygenerujes novu populaciu)
-# novu populaciu pripojis k starej a spravis ranky (q_res)
 
 
 # HillClimb(-2,1,f.SphereFunction(-2,2,0.1))
